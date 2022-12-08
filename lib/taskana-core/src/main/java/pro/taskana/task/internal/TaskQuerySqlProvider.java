@@ -380,6 +380,7 @@ public class TaskQuerySqlProvider {
     commonWhereClauses("classificationCategory", "CLASSIFICATION_CATEGORY", sb);
     commonWhereClauses("classificationKey", "t.CLASSIFICATION_KEY", sb);
     commonWhereClauses("classificationName", "c.NAME", sb);
+    commonWhereClauses("classificationParentKey", "t.CLASSIFICATION_PARENT_KEY", sb);
     commonWhereClauses("creator", "t.CREATOR", sb);
     commonWhereClauses("name", "t.NAME", sb);
     commonWhereClauses("owner", "t.OWNER", sb);
@@ -411,6 +412,7 @@ public class TaskQuerySqlProvider {
     whereNotIn("externalIdNotIn", "t.EXTERNAL_ID", sb);
     whereIn("priority", "t.PRIORITY", sb);
     whereNotIn("priorityNotIn", "t.PRIORITY", sb);
+    whereInInterval("priorityWithin", "t.PRIORITY", sb);
     whereIn("ownerLongNameIn", "u.LONG_NAME", sb);
     whereNotIn("ownerLongNameNotIn", "u.LONG_NAME", sb);
     whereIn("stateIn", "t.STATE", sb);

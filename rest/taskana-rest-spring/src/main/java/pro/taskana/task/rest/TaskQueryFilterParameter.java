@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Optional;
 
+import pro.taskana.common.api.IntInterval;
 import pro.taskana.common.api.KeyDomain;
 import pro.taskana.common.api.TimeInterval;
 import pro.taskana.common.api.exceptions.InvalidArgumentException;
@@ -483,6 +484,18 @@ public class TaskQueryFilterParameter implements QueryParameter<TaskQuery, Void>
   /** Filter by what the priority of the Task shouldn't be. This is an exact match. */
   @JsonProperty("priority-not")
   private final int[] priorityNotIn;
+
+  /** Filter by the range of values of the priority field of the Task. */
+  @JsonProperty("priority-within")
+  private final Integer[] priorityWithin;
+
+  /** Filter by priority starting from the given value (inclusive). */
+  @JsonProperty("priority-from")
+  private final Integer priorityFrom;
+
+  /** Filter by priority up to the given value (inclusive). */
+  @JsonProperty("priority-until")
+  private final Integer priorityUntil;
   // endregion
   // region state
   /** Filter by the Task state. This is an exact match. */
@@ -526,6 +539,37 @@ public class TaskQueryFilterParameter implements QueryParameter<TaskQuery, Void>
    */
   @JsonProperty("classification-key-not-like")
   private final String[] classificationKeyNotLike;
+  // endregion
+  // region classificationParentKey
+  /**
+   * Filter by the classification parent key of the Task#ClassificationSummary. This is an exact
+   * match.
+   */
+  @JsonProperty("classification-parent-key")
+  private final String[] classificationParentKeyIn;
+
+  /**
+   * Filter by the classification parent key of the Task#ClassificationSummary. This is an exact
+   * match.
+   */
+  @JsonProperty("classification-parent-key-not")
+  private final String[] classificationParentKeyNotIn;
+
+  /**
+   * Filter by the classification parent key of the Task#ClassificationSummary. This results in a
+   * substring search (% is appended to the front and end of the requested value). Further SQL
+   * "LIKE" wildcard characters will be resolved correctly.
+   */
+  @JsonProperty("classification-parent-key-like")
+  private final String[] classificationParentKeyLike;
+
+  /**
+   * Filter by what the classification parent key of the Task shouldn't be. This results in a
+   * substring search (% is appended to the front and end of the requested value). Further SQL
+   * "LIKE" wildcard characters will be resolved correctly.
+   */
+  @JsonProperty("classification-parent-key-not-like")
+  private final String[] classificationParentKeyNotLike;
   // endregion
   // region classificationCategory
   /** Filter by the classification category of the Task. This is an exact match. */
@@ -1161,6 +1205,9 @@ public class TaskQueryFilterParameter implements QueryParameter<TaskQuery, Void>
     "description-not-like",
     "priority",
     "priority-not",
+    "priority-within",
+    "priority-from",
+    "priority-until",
     "state",
     "state-not",
     "classification-id",
@@ -1169,6 +1216,10 @@ public class TaskQueryFilterParameter implements QueryParameter<TaskQuery, Void>
     "classification-key-not",
     "classification-key-like",
     "classification-key-not-like",
+    "classification-parent-key",
+    "classification-parent-key-not",
+    "classification-parent-key-like",
+    "classification-parent-key-not-like",
     "classification-category",
     "classification-category-not",
     "classification-category-like",
@@ -1307,6 +1358,9 @@ public class TaskQueryFilterParameter implements QueryParameter<TaskQuery, Void>
       String[] descriptionNotLike,
       int[] priorityIn,
       int[] priorityNotIn,
+      Integer[] priorityWithin,
+      Integer priorityFrom,
+      Integer priorityUntil,
       TaskState[] stateIn,
       TaskState[] stateNotIn,
       String[] classificationIdIn,
@@ -1315,6 +1369,10 @@ public class TaskQueryFilterParameter implements QueryParameter<TaskQuery, Void>
       String[] classificationKeyNotIn,
       String[] classificationKeyLike,
       String[] classificationKeyNotLike,
+      String[] classificationParentKeyIn,
+      String[] classificationParentKeyNotIn,
+      String[] classificationParentKeyLike,
+      String[] classificationParentKeyNotLike,
       String[] classificationCategoryIn,
       String[] classificationCategoryNotIn,
       String[] classificationCategoryLike,
@@ -1452,6 +1510,9 @@ public class TaskQueryFilterParameter implements QueryParameter<TaskQuery, Void>
     this.descriptionNotLike = descriptionNotLike;
     this.priorityIn = priorityIn;
     this.priorityNotIn = priorityNotIn;
+    this.priorityWithin = priorityWithin;
+    this.priorityFrom = priorityFrom;
+    this.priorityUntil = priorityUntil;
     this.stateIn = stateIn;
     this.stateNotIn = stateNotIn;
     this.classificationIdIn = classificationIdIn;
@@ -1460,6 +1521,10 @@ public class TaskQueryFilterParameter implements QueryParameter<TaskQuery, Void>
     this.classificationKeyNotIn = classificationKeyNotIn;
     this.classificationKeyLike = classificationKeyLike;
     this.classificationKeyNotLike = classificationKeyNotLike;
+    this.classificationParentKeyIn = classificationParentKeyIn;
+    this.classificationParentKeyNotIn = classificationParentKeyNotIn;
+    this.classificationParentKeyLike = classificationParentKeyLike;
+    this.classificationParentKeyNotLike = classificationParentKeyNotLike;
     this.classificationCategoryIn = classificationCategoryIn;
     this.classificationCategoryNotIn = classificationCategoryNotIn;
     this.classificationCategoryLike = classificationCategoryLike;
@@ -1666,6 +1731,13 @@ public class TaskQueryFilterParameter implements QueryParameter<TaskQuery, Void>
     Optional.ofNullable(priorityIn).ifPresent(query::priorityIn);
     Optional.ofNullable(priorityNotIn).ifPresent(query::priorityNotIn);
 
+    Optional.ofNullable(priorityWithin)
+        .map(this::extractIntIntervals)
+        .ifPresent(query::priorityWithin);
+    if (priorityFrom != null && priorityUntil != null) {
+      query.priorityWithin(new IntInterval(priorityFrom, priorityUntil));
+    }
+
     Optional.ofNullable(stateIn).ifPresent(query::stateIn);
     Optional.ofNullable(stateNotIn).ifPresent(query::stateNotIn);
 
@@ -1680,6 +1752,16 @@ public class TaskQueryFilterParameter implements QueryParameter<TaskQuery, Void>
     Optional.ofNullable(classificationKeyNotLike)
         .map(this::wrapElementsInLikeStatement)
         .ifPresent(query::classificationKeyNotLike);
+
+    Optional.ofNullable(classificationParentKeyIn).ifPresent(query::classificationParentKeyIn);
+    Optional.ofNullable(classificationParentKeyNotIn)
+        .ifPresent(query::classificationParentKeyNotIn);
+    Optional.ofNullable(classificationParentKeyLike)
+        .map(this::wrapElementsInLikeStatement)
+        .ifPresent(query::classificationParentKeyLike);
+    Optional.ofNullable(classificationParentKeyNotLike)
+        .map(this::wrapElementsInLikeStatement)
+        .ifPresent(query::classificationParentKeyNotLike);
 
     Optional.ofNullable(classificationCategoryIn).ifPresent(query::classificationCategoryIn);
     Optional.ofNullable(classificationCategoryNotIn).ifPresent(query::classificationCategoryNotIn);

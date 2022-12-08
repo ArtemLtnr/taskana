@@ -100,6 +100,7 @@ public class TaskQueryImpl implements TaskQuery {
   private String[] descriptionNotLike;
   private int[] priority;
   private int[] priorityNotIn;
+  private IntInterval[] priorityWithin;
   private TaskState[] stateIn;
   private TaskState[] stateNotIn;
   private String[] classificationIdIn;
@@ -108,6 +109,10 @@ public class TaskQueryImpl implements TaskQuery {
   private String[] classificationKeyNotIn;
   private String[] classificationKeyLike;
   private String[] classificationKeyNotLike;
+  private String[] classificationParentKeyIn;
+  private String[] classificationParentKeyNotIn;
+  private String[] classificationParentKeyLike;
+  private String[] classificationParentKeyNotLike;
   private String[] classificationCategoryIn;
   private String[] classificationCategoryNotIn;
   private String[] classificationCategoryLike;
@@ -597,6 +602,12 @@ public class TaskQueryImpl implements TaskQuery {
   }
 
   @Override
+  public TaskQuery priorityWithin(IntInterval[] priorities) {
+    this.priorityWithin = priorities;
+    return this;
+  }
+
+  @Override
   public TaskQuery orderByPriority(SortDirection sortDirection) {
     return addOrderCriteria("PRIORITY", sortDirection);
   }
@@ -659,6 +670,30 @@ public class TaskQueryImpl implements TaskQuery {
     return DB.isDb2(getDatabaseId())
         ? addOrderCriteria("TCLASSIFICATION_KEY", sortDirection)
         : addOrderCriteria("t.CLASSIFICATION_KEY", sortDirection);
+  }
+
+  @Override
+  public TaskQuery classificationParentKeyIn(String... classificationParentKeys) {
+    this.classificationParentKeyIn = classificationParentKeys;
+    return this;
+  }
+
+  @Override
+  public TaskQuery classificationParentKeyNotIn(String... classificationParentKeys) {
+    this.classificationParentKeyNotIn = classificationParentKeys;
+    return this;
+  }
+
+  @Override
+  public TaskQuery classificationParentKeyLike(String... classificationParentKeys) {
+    this.classificationParentKeyLike = toLowerCopy(classificationParentKeys);
+    return this;
+  }
+
+  @Override
+  public TaskQuery classificationParentKeyNotLike(String... classificationParentKeys) {
+    this.classificationParentKeyNotLike = toLowerCopy(classificationParentKeys);
+    return this;
   }
 
   @Override
@@ -2290,6 +2325,8 @@ public class TaskQueryImpl implements TaskQuery {
         + Arrays.toString(priority)
         + ", priorityNotIn="
         + Arrays.toString(priorityNotIn)
+        + ", priorityWithin="
+        + Arrays.toString(priorityWithin)
         + ", stateIn="
         + Arrays.toString(stateIn)
         + ", stateNotIn="
@@ -2306,6 +2343,14 @@ public class TaskQueryImpl implements TaskQuery {
         + Arrays.toString(classificationKeyLike)
         + ", classificationKeyNotLike="
         + Arrays.toString(classificationKeyNotLike)
+        + ", classificationParentKeyIn="
+        + Arrays.toString(classificationParentKeyIn)
+        + ", classificationParentKeyNotIn="
+        + Arrays.toString(classificationParentKeyNotIn)
+        + ", classificationParentKeyLike="
+        + Arrays.toString(classificationParentKeyLike)
+        + ", classificationParentKeyNotLike="
+        + Arrays.toString(classificationParentKeyNotLike)
         + ", classificationCategoryIn="
         + Arrays.toString(classificationCategoryIn)
         + ", classificationCategoryNotIn="

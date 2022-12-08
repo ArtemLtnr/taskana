@@ -482,6 +482,15 @@ public interface TaskQuery extends BaseQuery<TaskSummary, TaskQueryColumnName> {
   TaskQuery priorityNotIn(int... priorities);
 
   /**
+   * Includes the priorities in the provided range (inclusive) to your query (eg. priorities = [1,3]
+   * includes 1,2,3).
+   *
+   * @param priorities as an integer intervals.
+   * @return the query.
+   */
+  TaskQuery priorityWithin(IntInterval... priorities);
+
+  /**
    * This method sorts the query result according to the priority.
    *
    * @param sortDirection Determines whether the result is sorted in ascending or descending order.
@@ -584,6 +593,45 @@ public interface TaskQuery extends BaseQuery<TaskSummary, TaskQueryColumnName> {
    * @return the query
    */
   TaskQuery orderByClassificationKey(SortDirection sortDirection);
+
+  // endregion
+  // region classificationParentKey
+
+  /**
+   * Add your classificationParentKeys to your query.
+   *
+   * @param classificationParentKeys the classification parent keys.
+   * @return the query.
+   */
+  TaskQuery classificationParentKeyIn(String... classificationParentKeys);
+
+  /**
+   * Exclude these classificationParentKeys from your query.
+   *
+   * @param classificationParentKeys the classification parent keys.
+   * @return the query.
+   */
+  TaskQuery classificationParentKeyNotIn(String... classificationParentKeys);
+
+  /**
+   * Add your classificationParentKeys for pattern matching to your query. It will be compared in
+   * SQL with the LIKE operator. You may use a wildcard like % to specify the pattern. If you
+   * specify multiple arguments they are combined with the OR keyword.
+   *
+   * @param classificationParentKeys the classification parent keys.
+   * @return the query.
+   */
+  TaskQuery classificationParentKeyLike(String... classificationParentKeys);
+
+  /**
+   * Exclude the classificationParentKeys for pattern matching from your query. It will be compared
+   * in SQL with the LIKE operator. You may use a wildcard like % to specify the pattern. If you
+   * specify multiple arguments they are combined with the OR keyword.
+   *
+   * @param classificationParentKeys the classification parent keys.
+   * @return the query.
+   */
+  TaskQuery classificationParentKeyNotLike(String... classificationParentKeys);
 
   // endregion
   // region classificationCategory
